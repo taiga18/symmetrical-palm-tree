@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日本の米価高騰問題：インタラクティブ・レポート</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Visualization & Content Choices:
+        - Section I, Table 1 -> Goal: 価格高騰を示す -> Bar Chart (最新価格 vs 前年同期価格) -> Click nav -> 価格上昇の明確な視覚化 -> Chart.js.
+        - Section I, Table 2 -> Goal: 危機を比較 -> HTML Table -> Click nav -> テキスト情報の直接比較 -> HTML/Tailwind.
+        - Section II, Table 3 -> Goal: コスト上昇を示す -> Bar Chart (費用項目別上昇率) -> Click nav -> 生産コスト要因の視覚化 -> Chart.js.
+        - Section III, Table 4 -> Goal: 家計への影響を示す -> Bar Chart/Stats (影響指標) -> Click nav -> 消費者負担の定量化 -> Chart.js.
+        - Section IV, Table 5 -> Goal: 政府対応詳細を示す -> Bar Chart/Stats (備蓄米放出データ) -> Click nav -> 介入詳細 -> Chart.js.
+        - Section VI, Table 6 -> Goal: 将来展望を示す -> Bar Chart (需給見通し) -> Click nav -> 将来トレンド -> Chart.js.
+        全てのグラフはレスポンシブでcanvasを使用します。レポートのテキスト内容は各セクションの要約と説明に使用します。
+        CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 768px; /* max-w-2xl */
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px; /* Base height */
+            max-height: 400px;
+        }
+        @media (min-width: 640px) { /* sm */
+            .chart-container { height: 380px; }
+        }
+        @media (min-width: 768px) { /* md */
+            .chart-container { height: 400px; }
+        }
+        .nav-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.3s ease;
+            font-size: 0.875rem;
+        }
+        .nav-button.active {
+            background-color: #d97706; /* amber-600 */
+            color: white;
+        }
+        .nav-button:not(.active):hover {
+            background-color: #f59e0b; /* amber-500 */
+            color: white;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        h2 { font-size: 1.75rem; font-weight: 600; margin-bottom: 1rem; color: #a16207; /* amber-700 */ }
+        h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #a16207; /* amber-700 */ }
+        p { margin-bottom: 1rem; line-height: 1.75; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+        th, td { border: 1px solid #e5e7eb; padding: 0.75rem; text-align: left; font-size: 0.875rem; }
+        th { background-color: #f3f4f6; /* gray-100 */ }
+        .table-responsive { overflow-x: auto; }
+        .citation { font-size: 0.8rem; color: #6b7280; }
+    </style>
+</head>
+<body class="bg-stone-100 text-neutral-800">
+    <header class="bg-amber-700 text-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row items-center justify-between py-3">
+                <h1 class="text-xl sm:text-2xl font-bold mb-2 sm:mb-0">日本の米価高騰問題：インタラクティブ・レポート</h1>
+                <nav id="navigation" class="flex flex-wrap justify-center sm:justify-end space-x-1 sm:space-x-2">
+                    <button data-target="section1" class="nav-button active">I. 現状</button>
+                    <button data-target="section2" class="nav-button">II. 原因</button>
+                    <button data-target="section3" class="nav-button">III. 影響</button>
+                    <button data-target="section4" class="nav-button">IV. 政府対応</button>
+                    <button data-target="section5" class="nav-button">V. 解決策</button>
+                    <button data-target="section6" class="nav-button">VI. 展望</button>
+                    <button data-target="section7" class="nav-button">VII. 結論</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <section id="section1" class="content-section active">
+            <h2>I. 日本の食卓を揺るがす米価高騰：現状と課題</h2>
+            <p>日本の主食である米の価格が、近年著しい高騰を見せています。この状況は、家計や食品関連産業、さらには日本の食料安全保障に至るまで、広範な影響を及ぼし始めています。本レポートでは、この「令和の米騒動」とも称される事態の現状を多角的に把握し、その深刻度と課題を明らかにします。</p>
+
+            <h3>1.1. 最新の米価動向</h3>
+            <p>米価の高騰は、小売価格、消費者物価指数（CPI）、生産者と卸売業者間の相対取引価格、そして卸売業者間のスポット取引価格といった、サプライチェーンの各段階で顕著に現れています。</p>
+            <p><strong>小売価格</strong>は、消費者が最も直接的に影響を受ける指標です。2025年5月11日終了週の全国平均小売価格は、5kg袋あたり4,268円に達し、前年同期の2倍以上、農林水産省がこの統計を開始して以来の最高値を記録しました <span class="citation">[1]</span>。特に、代表的な銘柄である「コシヒカリ」の5kg袋の東京都区部における店頭小売価格は、2024年12月時点で4,018円となり、前年同月の2,422円から1.68倍に上昇しています <span class="citation">[2]</span>。</p>
+            <p><strong>消費者物価指数（CPI）</strong>においても、米価の異常な上昇が確認できます。総務省が発表した令和7年（2025年）1月の米類の指数（令和2年基準）は、前年同月比で+70.9％の171.3ポイントとなり、他の主要な主食群と比較して突出して高い伸びを示しています <span class="citation">[3]</span>。</p>
+            <p>生産者と卸売業者間で行われる<strong>相対取引価格</strong>も上昇傾向にあります。令和5年（2023年）産米の令和5年12月における全銘柄平均価格は、60kgあたり15,390円となり、前月比で150円、前年産平均価格と比較すると1,403円高い水準です <span class="citation">[4]</span>。</p>
+            <p>さらに、卸売業者間などで行われる比較的小規模な<strong>スポット取引市場</strong>では、価格高騰がより一層鮮明です。令和6年（2024年）産の関東銘柄米は過去に例を見ない価格上昇を記録しており、特に2025年1月以降は前年比で約3倍の水準にまで達しました。具体的には、2025年1月下期の取引価格が45,391円（前年同月15,440円）、同年2月下期には46,780円（前年同月16,479円）といった異常な高値で取引されています <span class="citation">[3]</span>。</p>
+            
+            <div class="chart-container my-8">
+                <canvas id="priceTrendChart"></canvas>
+            </div>
+            <p class="text-sm text-center text-gray-600 mb-6">図1：近年の米価上昇の概要（データ出典：表1）</p>
+
+            <div class="table-responsive my-8">
+                <table>
+                    <caption>表1：近年の米価上昇の概要（2024年～2025年） <span class="citation">[1]</span></caption>
+                    <thead>
+                        <tr>
+                            <th>価格指標</th>
+                            <th>最新価格（円）</th>
+                            <th>前年同期価格（円）</th>
+                            <th>前年同期比（%）</th>
+                            <th>データ時点</th>
+                            <th>出典</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>小売価格 コシヒカリ5kg（東京都区部）</td>
+                            <td>4,018</td>
+                            <td>2,422</td>
+                            <td>+65.9%</td>
+                            <td>2024年12月</td>
+                            <td><span class="citation">[2]</span></td>
+                        </tr>
+                        <tr>
+                            <td>小売価格 5kg袋平均（全国）</td>
+                            <td>4,268</td>
+                            <td>約2,100 (推定)</td>
+                            <td>約+103%</td>
+                            <td>2025年5月11日週</td>
+                            <td><span class="citation">[1]</span></td>
+                        </tr>
+                        <tr>
+                            <td>消費者物価指数 米類（全国、令和2年=100）</td>
+                            <td>171.3 (ポイント)</td>
+                            <td>100.2 (ポイント)</td>
+                            <td>+70.9%</td>
+                            <td>2025年1月</td>
+                            <td><span class="citation">[3]</span></td>
+                        </tr>
+                        <tr>
+                            <td>相対取引価格 全銘柄平均 60kg（生産者-卸）</td>
+                            <td>15,390 (令和5年産)</td>
+                            <td>13,987 (令和4年産)</td>
+                            <td>+10.0%</td>
+                            <td>2023年12月</td>
+                            <td><span class="citation">[4]</span></td>
+                        </tr>
+                        <tr>
+                            <td>スポット取引価格 関東銘柄米 60kg（卸-卸等）</td>
+                            <td>46,780 (令和6年産)</td>
+                            <td>16,479 (令和5年産)</td>
+                            <td>+183.9%</td>
+                            <td>2025年2月下期</td>
+                            <td><span class="citation">[3]</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>1.2. 歴史的な価格推移との比較</h3>
+            <p>現在の米価高騰を歴史的な視点から見ると、その特異性がより明確になります。過去の深刻な米不足として記憶されるのは「平成の米騒動」ですが、今回の高騰は複合的な要因が絡み合っています。</p>
+            <div class="table-responsive my-8">
+                <table>
+                    <caption>表2：日本の主要な米価変動と危機比較</caption>
+                    <thead>
+                        <tr>
+                            <th>出来事/年</th>
+                            <th>主要な価格指標</th>
+                            <th>国内の主な原因</th>
+                            <th>国外の主な原因</th>
+                            <th>政府の主な対応</th>
+                            <th>主な結果・教訓</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>昭和40年代後半～ 過剰米問題と減反政策開始</td>
+                            <td>政府買入価格の維持、政府在庫の増大</td>
+                            <td>食生活変化による需要減、豊作、高米価政策</td>
+                            <td>(限定的)</td>
+                            <td>生産調整（減反）の開始、過剰米処理（飼料用等）</td>
+                            <td>長期的な減反政策の定着、財政負担の発生 <span class="citation">[7]</span></td>
+                        </tr>
+                        <tr>
+                            <td>平成の米騒動（1993年～1994年）</td>
+                            <td>小売価格急騰、品不足</td>
+                            <td>記録的な冷害による大凶作（作況指数75） <span class="citation">[5]</span></td>
+                            <td>(直接的にはなし)</td>
+                            <td>約259万トンの緊急輸入（主にタイ米）、政府備蓄米放出</td>
+                            <td>輸入米の品質・食味問題、消費者の不満、備蓄制度（100万トン規模）の創設（1995年）、耐冷性品種開発の促進 <span class="citation">[5, 6]</span></td>
+                        </tr>
+                        <tr>
+                            <td>令和の米騒動（2024年～2025年）</td>
+                            <td>小売価格が前年比2倍以上、スポット価格は3倍以上 <span class="citation">[1, 3]</span></td>
+                            <td>生産コスト高騰、農業従事者の高齢化・後継者不足、作付面積減少、2023年猛暑による品質・収量低下 <span class="citation">[8, 9, 10]</span></td>
+                            <td>インド等による輸出規制、円安、国際的な穀物価格上昇</td>
+                            <td>政府備蓄米約21万トンの市場放出、韓国等からの輸入開始 <span class="citation">[3, 10, 11]</span></td>
+                            <td>（進行中）限定的な価格抑制効果、流通の課題露呈、食料安全保障政策の見直し議論活発化</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <h3>1.3. 問題の深刻度と本レポートの構成</h3>
+            <p>今回の米価高騰は、単なる一過性の価格変動に留まらず、日本社会の根幹に関わる深刻な問題を提起しています。「令和の米騒動」という言葉が用いられるほど、経済的・心理的影響は大きいです。本レポートでは、この問題の深層を多角的に分析します。</p>
+        </section>
+
+        <section id="section2" class="content-section">
+            <h2>II. なぜ米価はこれほど高騰しているのか？：複合的要因の深掘り分析</h2>
+            <p>現在の米価高騰は、単一の原因によるものではなく、国内の生産構造、流通システム、需要動向、そして国際市場の変動といった複数の要因が複雑に絡み合って発生しています。ここでは、これらの要因を深掘りし、問題の構造を明らかにします。</p>
+
+            <h3>2.1. 国内生産の構造的課題</h3>
+            <p><strong>生産コストの高騰：</strong>肥料、燃料、農業機械の維持・購入費などが著しく上昇し、農家経営を圧迫しています <span class="citation">[8, 9, 10]</span>。肥料費は3年前に比べて1.4倍になったとの調査もあります <span class="citation">[15]</span>。</p>
+            <div class="chart-container my-8">
+                <canvas id="productionCostChart"></canvas>
+            </div>
+            <p class="text-sm text-center text-gray-600 mb-6">図2：米生産における主要なコスト上昇（データ出典：表3）</p>
+
+            <div class="table-responsive my-8">
+                <table>
+                    <caption>表3：米生産における主要なコスト上昇分析（対2021年または3年前比較）</caption>
+                    <thead>
+                        <tr>
+                            <th>費用項目</th>
+                            <th>費用上昇率（目安）</th>
+                            <th>主な上昇要因</th>
+                            <th>農家収益性への影響（定性的）</th>
+                            <th>出典例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>肥料費</td>
+                            <td>+30%～1.4倍</td>
+                            <td>国際的な原料価格高騰、エネルギー価格上昇、円安</td>
+                            <td>甚大</td>
+                            <td><span class="citation">[8, 15]</span></td>
+                        </tr>
+                        <tr>
+                            <td>燃料費（光熱動力費）</td>
+                            <td>+25%～1.3倍</td>
+                            <td>原油価格高騰、エネルギー価格上昇、円安</td>
+                            <td>甚大</td>
+                            <td><span class="citation">[8, 15]</span></td>
+                        </tr>
+                        <tr>
+                            <td>農業機械費（維持等）</td>
+                            <td>+15%</td>
+                            <td>部品価格上昇、資材価格高騰</td>
+                            <td>大</td>
+                            <td><span class="citation">[8]</span></td>
+                        </tr>
+                        <tr>
+                            <td>農薬費</td>
+                            <td>上昇傾向</td>
+                            <td>原料価格高騰、開発コスト増</td>
+                            <td>中</td>
+                            <td><span class="citation">[15]</span></td>
+                        </tr>
+                        <tr>
+                            <td>全体生産費（60kg当）</td>
+                            <td>令和4年産 前年比+3.5%</td>
+                            <td>上記要因の複合</td>
+                            <td>大</td>
+                            <td><span class="citation">[16]</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p><strong>気候変動の影響：</strong>2023年の記録的な猛暑や異常気象は、米の収量減少や品質低下を引き起こしています <span class="citation">[9, 10]</span>。特にコシヒカリは高温に弱く、品質低下粒が増加する傾向があります <span class="citation">[18, 19]</span>。</p>
+            <p><strong>農業従事者の高齢化と労働力不足：</strong>農業従事者の平均年齢は68.7歳（令和5年）に達し <span class="citation">[24]</span>、7割以上の経営体が後継者不足に直面しています <span class="citation">[24]</span>。これが耕作放棄地の増加や作付面積の減少に繋がっています。</p>
+            <p><strong>作付面積の減少と生産調整：</strong>米消費量の減少や過去の減反政策の影響で、作付面積は長年減少し続けています <span class="citation">[7, 27, 28, 29]</span>。</p>
+
+            <h3>2.2. 流通システムと市場の動向</h3>
+            <p>JAルートを経由しない直接取引の増加など流通形態が多様化する一方で、市場の透明性低下や需給把握の困難さが指摘されています <span class="citation">[10, 31]</span>。一部で「米の買い占め」報道もありましたが、実需側は供給量自体の不足を指摘しています <span class="citation">[32]</span>。政府備蓄米の放出方法についても議論があります <span class="citation">[33]</span>。</p>
+
+            <h3>2.3. 国内需要の変化と消費者行動</h3>
+            <p>外食需要の回復やインバウンド増加で業務用米の需要が増えています <span class="citation">[10, 25]</span>。また、小麦製品の値上がりから一時的に国産米への需要シフトがありましたが <span class="citation">[14]</span>、その後の米価急騰で再び代替食品へ流れる傾向も見られます <span class="citation">[31]</span>。価格高騰報道による買いだめ行動も発生しています <span class="citation">[14]</span>。</p>
+
+            <h3>2.4. 国際市場からの影響</h3>
+            <p>世界最大の米輸出国インドによる輸出制限 <span class="citation">[31, 34, 35]</span>、歴史的な円安 <span class="citation">[37, 38]</span>、ウクライナ紛争などが、国際的な米価や生産資材価格を押し上げています。これを受け、日本は韓国やベトナムなどからの米輸入を再開・増加させています <span class="citation">[10, 44]</span>。</p>
+        </section>
+
+        <section id="section3" class="content-section">
+            <h2>III. 米価高騰が社会経済に与える広範な影響</h2>
+            <p>米価の高騰は、個々の家計から生産者、さらには食品関連産業全体に至るまで、日本社会の様々な側面に深刻な影響を及ぼしています。</p>
+
+            <h3>3.1. 消費者・家計への打撃</h3>
+            <p>主食である米の価格上昇は、消費者の家計に直接的な打撃を与えています。試算によると、月に5kg程度の米を消費する家庭では、年間で1万円～2万円程度の負担増になる可能性が指摘されています <span class="citation">[3, 12]</span>。これはマクロ経済にも影響し、実質個人消費や実質GDPを押し下げる要因となり得ます <span class="citation">[12]</span>。消費者は高騰した米を避け、代替食品へシフトする動きが見られ、小売店での米の販売数量も減少しています <span class="citation">[45]</span>。特に低所得世帯への影響は深刻です。</p>
+            <div class="chart-container my-8">
+                <canvas id="householdImpactChart"></canvas>
+            </div>
+            <p class="text-sm text-center text-gray-600 mb-6">図3：米価高騰の家計への影響試算（データ出典：表4）</p>
+
+            <div class="table-responsive my-8">
+                <table>
+                    <caption>表4：米価高騰の家計への影響試算</caption>
+                    <thead>
+                        <tr>
+                            <th>影響指標</th>
+                            <th>数値・割合</th>
+                            <th>出典例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>平均的な家計の年間追加負担額</td>
+                            <td>約10,673円～20,000円</td>
+                            <td><span class="citation">[3, 12]</span></td>
+                        </tr>
+                        <tr>
+                            <td>消費者物価全体への押し上げ効果</td>
+                            <td>0.44％（年間、米価70.7%上昇が続いた場合）</td>
+                            <td><span class="citation">[12]</span></td>
+                        </tr>
+                        <tr>
+                            <td>実質個人消費への影響（年間）</td>
+                            <td>-0.21％</td>
+                            <td><span class="citation">[12]</span></td>
+                        </tr>
+                        <tr>
+                            <td>実質GDPへの影響（年間）</td>
+                            <td>-0.23％</td>
+                            <td><span class="citation">[12]</span></td>
+                        </tr>
+                        <tr>
+                            <td>小売店での米販売数量（2025年3月）</td>
+                            <td>前年同月比 86.3％</td>
+                            <td><span class="citation">[45]</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>3.2. 生産者の苦境と経営への影響</h3>
+            <p>米価が上昇しているにもかかわらず、生産資材価格の高騰がそれを上回るため、多くの生産者はむしろ経営難に陥っています <span class="citation">[8]</span>。農家の手取り収入は減少し、特に小規模農家や高齢農家は深刻で、廃業を選択するケースも増えています <span class="citation">[8]</span>。市場価格の上昇が生産者収入に直結しにくい流通構造の問題も指摘されています。</p>
+
+            <h3>3.3. 食品関連産業（外食・中食・小売）の対応と課題</h3>
+            <p>外食産業では、原材料費増からメニュー価格への転嫁が進んでいます。大手チェーンでも値上げやご飯大盛りの有料化が行われています <span class="citation">[46]</span>。中食産業も同様にコスト増に直面しています <span class="citation">[31]</span>。小売業では仕入れ価格が大幅に上昇（2025年3月時点で前年同月比184.5％ <span class="citation">[45]</span>）し、販売数量は減少しています。民間在庫も低水準です <span class="citation">[45]</span>。特に「米中心型ビジネス」は深刻な脅威に晒されています。</p>
+        </section>
+
+        <section id="section4" class="content-section">
+            <h2>IV. 政府の対応策：現状の評価と今後の焦点</h2>
+            <p>米価の急騰と供給不安に対し、日本政府も様々な対策を講じ始めています。ここでは、主な施策とその効果、そして今後の課題について評価します。</p>
+
+            <h3>4.1. 政府備蓄米の放出：効果と限界</h3>
+            <p>政府は2025年2月に備蓄米21万トンの市場放出を決定しました <span class="citation">[11]</span>。3月には第1回目の入札が行われ、平均落札価格は60kgあたり21,217円でした <span class="citation">[3]</span>。これにより米価の急騰には歯止めがかかりましたが、価格を大幅に引き下げる効果は限定的との見方が強いです <span class="citation">[11]</span>。放出された備蓄米が消費者に届くまでのスピードも課題で、5月上旬時点で実際に供給されたのは放出決定量の約2%に過ぎませんでした <span class="citation">[11]</span>。放出のタイミングや方法についての批判もあります <span class="citation">[9, 33]</span>。</p>
+            <div class="chart-container my-8">
+                <canvas id="reserveReleaseChart"></canvas>
+            </div>
+            <p class="text-sm text-center text-gray-600 mb-6">図4：政府備蓄米放出の概要（2025年）（データ出典：表5）</p>
+            
+            <div class="table-responsive my-8">
+                <table>
+                    <caption>表5：政府備蓄米放出の概要（2025年）</caption>
+                    <thead>
+                        <tr>
+                            <th>項目</th>
+                            <th>詳細</th>
+                            <th>出典例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>放出決定日</td>
+                            <td>2025年2月14日</td>
+                            <td><span class="citation">[11]</span></td>
+                        </tr>
+                        <tr>
+                            <td>総放出予定量</td>
+                            <td>21万トン</td>
+                            <td><span class="citation">[11]</span></td>
+                        </tr>
+                        <tr>
+                            <td>第1回入札落札量</td>
+                            <td>約14万1,700トン（約15万トン中）</td>
+                            <td><span class="citation">[3]</span></td>
+                        </tr>
+                        <tr>
+                            <td>第1回入札平均落札価格</td>
+                            <td>21,217円/60kg（税抜）</td>
+                            <td><span class="citation">[3]</span></td>
+                        </tr>
+                        <tr>
+                            <td>主な落札者</td>
+                            <td>JA全農（全体の約9割を落札）</td>
+                            <td><span class="citation">[11]</span></td>
+                        </tr>
+                        <tr>
+                            <td>市場への影響（価格）</td>
+                            <td>急騰に歯止め、横ばい傾向。大幅な価格低下には至らず <span class="citation">[11]</span></td>
+                            <td><span class="citation">[11]</span></td>
+                        </tr>
+                        <tr>
+                            <td>市場への影響（流通）</td>
+                            <td>小売・外食への供給は遅延気味（5月上旬時点で放出量の約2%）<span class="citation">[11]</span></td>
+                            <td><span class="citation">[11]</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>4.2. 輸入措置と国際調達</h3>
+            <p>政府は25年ぶりに韓国からの米輸入を再開し <span class="citation">[10]</span>、ベトナムからの輸入も増加しています <span class="citation">[44]</span>。2024年度の民間輸入申請は年間1万トンを超える可能性も指摘されています <span class="citation">[49]</span>。これは国内需給の逼迫を示唆し、食料安全保障の観点から国際調達戦略の見直しを迫っています。</p>
+
+            <h3>4.3. 生産者支援と農業補助金</h3>
+            <p>生産者からは経営安定のための支援策を求める声が強いですが、既存の補助金ではコスト増をカバーできていないとの指摘があります <span class="citation">[8]</span>。一方で、飼料用米への交付金単価などが一部引き下げられるなど <span class="citation">[50]</span>、政府の支援策が必ずしも生産現場の期待と一致しているわけではありません。</p>
+
+            <h3>4.4. 食料安全保障政策の再構築</h3>
+            <p>2024年6月に「食料・農業・農村基本法」が改正され、「食料安全保障の確保」が基本理念の第一に位置づけられました <span class="citation">[47, 51]</span>。国内生産基盤強化や合理的な価格形成の必要性が盛り込まれています。また、「食料安全保障強化政策大綱」も改訂され、具体的な施策が打ち出されました <span class="citation">[52]</span>。減反政策の是非をめぐる議論も再燃しています <span class="citation">[33, 53]</span>。</p>
+        </section>
+
+        <section id="section5" class="content-section">
+            <h2>V. 米価問題の解決と持続可能な米市場の実現に向けて：多角的な提言</h2>
+            <p>米価高騰問題の解決と、将来にわたる持続可能な米市場の実現のためには、短期的な需給安定化策と、中長期的な構造改革を組み合わせた多角的なアプローチが不可欠です。</p>
+
+            <h3>5.1. 短期的な需給安定化策</h3>
+            <p>政府備蓄米放出メカニズムの改善（機動性、透明性、競争性の向上）が喫緊の課題です <span class="citation">[9, 33]</span>。市場透明性の向上も重要で、正確かつタイムリーな情報提供により不安心理を抑制する必要があります <span class="citation">[14]</span>。</p>
+
+            <h3>5.2. 中長期的な農業構造改革</h3>
+            <p>スマート農業の推進（ドローン、AI活用など）によるコスト削減、収量・品質向上、労働力不足緩和が鍵です <span class="citation">[8, 54-59]</span>。生産基盤の強化と担い手支援（新規就農者育成、農地集積、法人経営促進）も不可欠です <span class="citation">[23, 52]</span>。減反政策の抜本的見直しと、意欲ある大規模農家への直接支払い制度への移行も提案されています <span class="citation">[33, 53]</span>。</p>
+
+            <h3>5.3. サプライチェーンの強靭化と効率化</h3>
+            <p>流通コストの削減（物流効率化、中間マージン適正化）や関係者間の連携強化（情報共有、共同配送）が求められます <span class="citation">[8, 52]</span>。在庫管理の高度化と、緊急時にも円滑に供給できる弾力的な流通システムの構築も課題です <span class="citation">[9, 11]</span>。</p>
+
+            <h3>5.4. 消費者の役割と意識改革</h3>
+            <p>冷静な情報判断とパニック買いの回避が重要です <span class="citation">[14]</span>。国産米の価値認識と国内生産者の応援、家庭での食品ロス削減も求められます <span class="citation">[8, 14, 60, 61]</span>。食料生産の背景理解も建設的な解決に繋がります <span class="citation">[8]</span>。</p>
+        </section>
+
+        <section id="section6" class="content-section">
+            <h2>VI. 日本の米の未来：今後の展望と課題</h2>
+            <p>日本の米を取り巻く環境は、短期的にも中長期的にも大きな変動と課題に直面しています。ここでは、今後の米価・需給の見通し、気候変動や国際情勢といったリスクへの対応、そして食料安全保障における国産米の役割について展望します。</p>
+
+            <h3>6.1. 2025年以降の米価・需給予測</h3>
+            <p>2025年産の主食用米は、作付面積増により生産量が前年比6%増の719万トンと過去5年で最多となる見通しです <span class="citation">[62]</span>。これにより需給は緩和し、2025年秋以降、価格は下落に転じる可能性が指摘されています <span class="citation">[3, 13]</span>。民間在庫も2026年6月末には適正水準を上回る214万トンに達する予測もあります <span class="citation">[62]</span>。しかし、これは「豊作貧乏・凶作高騰」のサイクルに陥るリスクも示唆しています。</p>
+            <div class="chart-container my-8">
+                <canvas id="supplyDemandOutlookChart"></canvas>
+            </div>
+            <p class="text-sm text-center text-gray-600 mb-6">図5：米の需給見通し（2025年～2026年）（データ出典：表6）</p>
+
+            <div class="table-responsive my-8">
+                <table>
+                    <caption>表6：米の需給見通し（2025年～2026年）</caption>
+                    <thead>
+                        <tr>
+                            <th>年/項目</th>
+                            <th>2025年産（見通し）</th>
+                            <th>2026年6月末（予測）</th>
+                            <th>主な影響要因</th>
+                            <th>出典例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>主食用米生産量</td>
+                            <td>719万トン（前年比+40万トン）</td>
+                            <td></td>
+                            <td>2024年～2025年の高米価による作付増</td>
+                            <td><span class="citation">[62]</span></td>
+                        </tr>
+                        <tr>
+                            <td>民間在庫量（期末）</td>
+                            <td></td>
+                            <td>214万トン（適正水準180～200万トンを上回る可能性）</td>
+                            <td>2025年産の豊作</td>
+                            <td><span class="citation">[62]</span></td>
+                        </tr>
+                        <tr>
+                            <td>価格トレンド（予測）</td>
+                            <td colspan="2">秋以降、供給増により需給緩和、価格は下落方向へ転換の可能性。2026年4月頃から価格安定または下落傾向が顕著になる可能性。</td>
+                            <td>2025年産の豊作による供給過剰</td>
+                            <td><span class="citation">[3, 13]</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>6.2. 気候変動と国際情勢のリスク管理</h3>
+            <p>将来的にも、猛暑や豪雨といった異常気象 <span class="citation">[9, 10, 18-22, 63-65]</span>、主要輸出国による輸出規制 <span class="citation">[31, 34-36]</span>、地政学的紛争による資材価格高騰 <span class="citation">[39, 40, 42]</span>、為替変動 <span class="citation">[37, 38]</span> といった複合リスクに晒され続けます。気候変動に強い新品種開発や節水技術、生産資材の安定確保策（国内資源活用、輸入先多角化）が重要です。</p>
+
+            <h3>6.3. 食料安全保障における国産米の役割再定義</h3>
+            <p>改正基本法で「食料安全保障の確保」が最重要課題とされました <span class="citation">[47, 51]</span>。米の自給率は99%と高く <span class="citation">[47]</span>、国産米は日本の食料安全保障の戦略的資産です。潜在的な生産能力は現在の約670万トンを大きく上回る1,700万トンとの試算もあります <span class="citation">[66]</span>。国内生産基盤を強化し、生産余力を維持・強化することが重要です。</p>
+
+            <h3>6.4. 歴史的米騒動からの教訓と未来への示唆</h3>
+            <p>平成の米騒動（1993-94年）は国内供給ショックで、緊急輸入米の品質問題から備蓄制度創設に繋がりました <span class="citation">[5, 6]</span>。2007-08年の世界食料価格危機は国際市場の複合要因で、持続的農業投資の重要性を示しました <span class="citation">[68-70]</span>。現在の「令和の米騒動」は国内構造問題、気候変動、国際市場不安定化が絡むハイブリッド型危機です。これらの経験は、食料安全保障を単一策に依存する危険性を示し、国内生産強化、気候変動適応、効率的サプライチェーン、国際協調、消費者理解を統合した重層的戦略の必要性を教えています。</p>
+        </section>
+
+        <section id="section7" class="content-section">
+            <h2>VII. 結論：日本の米の未来を確かなものにするために</h2>
+            <p>今回の「令和の米騒動」は、日本の食料供給システムの構造的脆弱性と新たなリスク要因が複合的に作用した結果です。生産現場の課題、流通の課題、消費者の不安が顕在化しました。政府対応は限定的で根本解決には至っていません。</p>
+            <p>解決には、短期的な市場安定化策と中長期的な構造改革を組み合わせた息の長い取り組みが必要です。</p>
+            <p><strong>短期的な対応</strong>としては、政府備蓄米運用の機動的・透明性向上と、正確な情報提供による市場沈静化が急務です。</p>
+            <p><strong>中長期的な視点</strong>では、以下の点が重要です：</p>
+            <ol class="list-decimal list-inside space-y-2 mb-4">
+                <li><strong>国内生産基盤の抜本的強化：</strong>スマート農業導入、担い手育成、気候変動対応品種開発、減反政策の見直し。</li>
+                <li><strong>サプライチェーンの強靭化と効率化：</strong>物流効率化、情報共有促進、緊急時対応可能な多元的流通チャネル確保。</li>
+                <li><strong>食料安全保障政策の進化：</strong>国産米の戦略的重要性再認識、強靭な国内供給体制構築（適切な備蓄と生産余力確保）。</li>
+                <li><strong>国際協調と安定的な輸入環境の確保：</strong>友好国連携、輸入先多角化による安定的な国際調達ルート確保。</li>
+                <li><strong>消費者の理解と行動変容の促進：</strong>食料生産の現状理解、食品ロス削減、国産農産物選択を促す情報提供・教育。</li>
+            </ol>
+            <p>日本の米問題は、食料安全保障、地域社会の持続可能性、国民生活の安定に関わる重要課題です。政府、生産者、関連産業、消費者一人ひとりが責任と役割を自覚し、協調して取り組む必要があります。日本の農業と食の未来を守るための努力を、今こそ結集すべき時です。</p>
+        </section>
+    </main>
+
+    <footer class="bg-amber-800 text-amber-100 text-center p-4 mt-8">
+        <p class="text-sm">&copy; 2025 米価高騰問題インタラクティブ・レポート. 情報は提供されたレポートに基づきます。</p>
+    </footer>
+
+<script>
+    // Helper function to wrap text for chart labels
+    function wrapText(text, maxWidth) {
+        const words = text.split(' ');
+        let lines = [];
+        let currentLine = words[0];
+
+        for (let i = 1; i < words.length; i++) {
+            if (currentLine.length + words[i].length + 1 < maxWidth) {
+                currentLine += ' ' + words[i];
+            } else {
+                lines.push(currentLine);
+                currentLine = words[i];
+            }
+        }
+        lines.push(currentLine);
+        return lines;
+    }
+
+    // Chart.js Global Configuration
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#334155'; // text-neutral-700
+
+    // Chart 1: Price Trend Chart (Table 1 Data)
+    const priceTrendCtx = document.getElementById('priceTrendChart').getContext('2d');
+    const priceTrendData = {
+        labels: [
+            '小売価格 コシヒカリ5kg (東京)',
+            '小売価格 5kg袋平均 (全国)',
+            '消費者物価指数 米類 (ポイント)',
+            '相対取引価格 全銘柄平均 60kg',
+            'スポット取引価格 関東銘柄米 60kg'
+        ],
+        datasets: [
+            {
+                label: '最新価格/指数',
+                data: [4018, 4268, 171.3, 15390, 46780],
+                backgroundColor: '#f59e0b', // amber-500
+                borderColor: '#d97706', // amber-600
+                borderWidth: 1
+            },
+            {
+                label: '前年同期価格/指数',
+                data: [2422, 2100, 100.2, 13987, 16479],
+                backgroundColor: '#fcd34d', // amber-300
+                borderColor: '#f59e0b', // amber-500
+                borderWidth: 1
+            }
+        ]
+    };
+    new Chart(priceTrendCtx, {
+        type: 'bar',
+        data: priceTrendData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: '価格（円）または指数' }
+                },
+                x: {
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return wrapText(this.getLabelForValue(value), 16);
+                        },
+                        maxRotation: 70,
+                        minRotation: 70
+                    }
+                }
+            },
+            plugins: {
+                title: { display: true, text: '図1：近年の米価上昇の概要', font: { size: 16 } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                if (context.label.includes('指数')) {
+                                     label += context.parsed.y.toFixed(1) + ' ポイント';
+                                } else {
+                                     label += '¥' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Chart 2: Production Cost Chart (Table 3 Data)
+    const productionCostCtx = document.getElementById('productionCostChart').getContext('2d');
+    const productionCostData = {
+        labels: ['肥料費', '燃料費', '農業機械費', '農薬費', '全体生産費(60kg当)'],
+        datasets: [{
+            label: '費用上昇率（目安, %） / 前年比(%)',
+            // Note: Table 3 has ranges like "+30%～1.4倍". For simplicity, using the lower bound or a representative value.
+            // 1.4倍 = +40%.  Using +30 for 肥料費, +25 for 燃料費, +15 for 機械費. 農薬費 '上昇傾向' is hard to quantify, using 5% as placeholder. 全体生産費 is +3.5%.
+            data: [30, 25, 15, 5, 3.5], 
+            backgroundColor: [
+                '#fbbf24', // amber-400
+                '#f59e0b', // amber-500
+                '#d97706', // amber-600
+                '#b45309', // amber-700
+                '#78350f'  // amber-900
+            ],
+            borderColor: '#92400e', // amber-800
+            borderWidth: 1
+        }]
+    };
+    new Chart(productionCostCtx, {
+        type: 'bar',
+        data: productionCostData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    title: { display: true, text: '上昇率 (%)' }
+                }
+            },
+            plugins: {
+                title: { display: true, text: '図2：米生産における主要なコスト上昇要因', font: { size: 16 } },
+                 tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label = context.label + ': '; // Use axis label for item name
+                            }
+                            if (context.parsed.x !== null) {
+                                label += context.parsed.x.toFixed(1) + '%';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Chart 3: Household Impact Chart (Table 4 Data)
+    const householdImpactCtx = document.getElementById('householdImpactChart').getContext('2d');
+    const householdImpactData = {
+        labels: ['年間追加負担額(円, 推定平均)', '消費者物価押上効果(%)', '実質個人消費影響(%)', '実質GDP影響(%)', '小売店販売数量(前年比 %)'],
+        datasets: [{
+            label: '影響値',
+            // Using average for range: (10673+20000)/2 = 15336.5
+            data: [15336.5, 0.44, -0.21, -0.23, 86.3],
+            backgroundColor: [
+                '#fbbf24', '#f59e0b', '#d97706', '#b45309', '#78350f'
+            ],
+            borderColor: '#92400e',
+            borderWidth: 1
+        }]
+    };
+    new Chart(householdImpactCtx, {
+        type: 'bar',
+        data: householdImpactData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    // title: { display: true, text: '金額(円) または 割合(%)' } // Mixed units, better to specify in tooltip/title
+                },
+                x: {
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return wrapText(this.getLabelForValue(value), 12);
+                        },
+                         maxRotation: 60,
+                         minRotation: 60
+                    }
+                }
+            },
+            plugins: {
+                title: { display: true, text: '図3：米価高騰の家計への影響試算', font: { size: 16 } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                if (context.label.includes('負担額')) {
+                                    label += '¥' + context.parsed.y.toLocaleString(undefined, {maximumFractionDigits:0});
+                                } else {
+                                    label += context.parsed.y.toFixed(2) + '%';
+                                }
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Chart 4: Reserve Release Chart (Table 5 Data)
+    const reserveReleaseCtx = document.getElementById('reserveReleaseChart').getContext('2d');
+    const reserveReleaseData = {
+        labels: ['総放出予定量(万トン)', '第1回入札落札量(万トン)', '平均落札価格(円/60kg)'],
+        datasets: [{
+            label: '政府備蓄米放出',
+            data: [21, 14.17, 21217], //万トン単位に注意
+            backgroundColor: ['#fbbf24', '#f59e0b', '#d97706'],
+            borderColor: '#92400e',
+            borderWidth: 1
+        }]
+    };
+    new Chart(reserveReleaseCtx, {
+        type: 'bar',
+        data: reserveReleaseData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                },
+                 x: {
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return wrapText(this.getLabelForValue(value), 15);
+                        }
+                    }
+                }
+            },
+            plugins: {
+                title: { display: true, text: '図4：政府備蓄米放出の概要（2025年）', font: { size: 16 } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                if (context.label.includes('価格')) {
+                                    label += '¥' + context.parsed.y.toLocaleString();
+                                } else {
+                                    label += context.parsed.y.toLocaleString() + ' 万トン';
+                                }
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Chart 5: Supply Demand Outlook Chart (Table 6 Data)
+    const supplyDemandCtx = document.getElementById('supplyDemandOutlookChart').getContext('2d');
+    const supplyDemandData = {
+        labels: ['主食用米生産量 (2025年産見通し)', '民間在庫量 (2026年6月末予測)'],
+        datasets: [{
+            label: '数量 (万トン)',
+            data: [719, 214],
+            backgroundColor: ['#fbbf24', '#f59e0b'],
+            borderColor: '#d97706',
+            borderWidth: 1
+        }]
+    };
+    new Chart(supplyDemandCtx, {
+        type: 'bar',
+        data: supplyDemandData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: '万トン' }
+                },
+                x: {
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return wrapText(this.getLabelForValue(value), 20);
+                        }
+                    }
+                }
+            },
+            plugins: {
+                title: { display: true, text: '図5：米の需給見通し（2025年～2026年）', font: { size: 16 } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label = context.label + ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y.toLocaleString() + ' 万トン';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+
+    // Navigation Logic
+    const navButtons = document.querySelectorAll('#navigation button');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Deactivate all buttons and sections
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            contentSections.forEach(section => section.classList.remove('active'));
+
+            // Activate clicked button and corresponding section
+            button.classList.add('active');
+            const targetId = button.getAttribute('data-target');
+            document.getElementById(targetId).classList.add('active');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+</script>
+</body>
+</html>
